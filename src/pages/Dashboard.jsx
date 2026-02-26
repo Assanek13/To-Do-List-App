@@ -1,231 +1,151 @@
-import React, {useState, useEffect} from "react";
+import React, { useMemo } from "react";
 import {
-    CheckCircle,
-    Clock,
-    AlertTriangle,
-    TrendingUp,
-    Calendar,
-    Target
+    CheckCircle, Clock, AlertTriangle, TrendingUp,
+    Calendar, Target, ChevronRight
 } from 'lucide-react';
-import { isTaskOverdue, formatDate } from "../utils/taskUtils"
+import { isTaskOverdue, formatDate } from '../utils/tasksUtils';
 
-const Dashboard = ({ tasks }) => {
-    const [stats, setStats] = useState ({
-        total: 0,
-        completed: 0,
-        pending: 0,
-        overdue: 0,
-        completionRate: 0,
-    });
-
-    const [upcomingTasks, setUpcomingTasks] = useState([]);
-
-    useEffect(() => {
+const Dashboard = ({ tasks = [] }) => {
+    // 1. Calcul des statistiques optimisé (ne se re-calcule que si 'tasks' change)
+    const stats = useMemo(() => {
         const total = tasks.length;
-        const completed = tasks.filter(task => task.completed).length;
-        const pending = tasks.filter(task => !task.completed).length;
-        const overdue = tasks.filter(task => !task.completed && isTaskOverdue(task.dueDate)).length;
-        const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-        setStats({
-            total,
-            completed,
-            pending,
-            overdue,
-            completionRate
-        });
-
-        // Get upcoming tasks (next 7 days)
+        const completed = tasks.filter(t => t.completed).length;
+        const overdue = tasks.filter(t => !t.completed && isTaskOverdue(t.dueDate)).length;
+        
+        // Calcul des tâches à venir (7 prochains jours)
         const now = new Date();
-        const nextweek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const nextWeek = new Date();
+        nextWeek.setDate(now.getDate() + 7);
 
         const upcoming = tasks
-            .filter(task => !task.completed && task.dueDate)
-            .filter(task => {
-                const dueDate = new Date(task.dueDate);
-                return dueDate >= now && dueDate <= nextweek;
+            .filter(t => !t.completed && t.dueDate)
+            .filter(t => {
+                const d = new Date(t.dueDate);
+                return d >= now && d <= nextWeek;
             })
             .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
             .slice(0, 5);
-            
-        setUpcomingTasks(upcoming);
+
+        return {
+            total,
+            completed,
+            pending: total - completed,
+            overdue,
+            completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+            upcoming
+        };
     }, [tasks]);
 
-    const StatCard = ({ icon: Icon, title, value, color, bgColor }) => (
-        <div className="card">
-            <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-600">{title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-                </div>
-                <div className={`p-3 rounded-full ${bgColor}`}>
-                    <Icon className={`h-6 w-6 ${color}`} />
-                </div>
-            </div>
-        </div>
-    );
-
-    const ProgressBar = ({ percentage }) => (
-        <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-                className="bg-primary-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${percentage}%` }}
-            />
-        </div>
-    );
-
     return (
-        <div className="flex-1 p-6">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-                <p className="font-gray-600">Welcome back! Here's your task overview.</p>
+        <div className="flex-1 p-8 bg-gray-50/30 overflow-y-auto">
+            {/* Header */}
+            <div className="mb-10">
+                <h1 className="text-4xl font-black text-gray-900 tracking-tight">Overview</h1>
+                <p className="text-gray-500 font-medium mt-2 text-lg">
+                    You've completed <span className="text-blue-600">{stats.completionRate}%</span> of your goals. Keep it up!
+                </p>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatCard
-                    icon={Target}
-                    title="Total Tasks"
-                    value={stats.total}
-                    color="text-blue-600"
-                    bgColor="bg-blue-100"
-                />
-                <StatCard
-                    icon={CheckCircle}
-                    title="Completed"
-                    value={stats.completed}
-                    color="text-green-600"
-                    bgColor="bg-green-100"
-                />
-                <StatCard
-                    icon={Clock}
-                    title="Pending"
-                    value={stats.pending}
-                    color="text-yellow-600"
-                    bgColor="bg-yellow-100"
-                />
-                <StatCard
-                    icon={AlertTriangle}
-                    title="Overdue"
-                    value={stats.overdue}
-                    color="text-red-600"
-                    bgColor="bg-red-100"
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <StatCard icon={Target} title="Total Tasks" value={stats.total} color="blue" />
+                <StatCard icon={CheckCircle} title="Completed" value={stats.completed} color="emerald" />
+                <StatCard icon={Clock} title="In Progress" value={stats.pending} color="amber" />
+                <StatCard icon={AlertTriangle} title="Overdue" value={stats.overdue} color="rose" />
             </div>
 
-            {/* Progress Overview */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div className="lg:col-span-2 card">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Progress Overviev</h3>
-                        <TrendingUp className="h-5 w-5 text-primary-500" />
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Completion Rate</span>
-                            <span className="font-semibold text-gray-900">{stats.completionRate}%</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Progress Card */}
+                <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-xl font-bold text-gray-900">Performance Metrics</h3>
+                        <div className="bg-blue-50 p-2 rounded-xl text-blue-600">
+                            <TrendingUp className="h-6 w-6" />
                         </div>
-                        <ProgressBar percentage={stats.completionRate} />
+                    </div>
+                    
+                    <div className="space-y-8">
+                        <div>
+                            <div className="flex justify-between mb-3 items-end">
+                                <span className="text-gray-500 font-bold text-sm uppercase tracking-widest">Global Progress</span>
+                                <span className="text-3xl font-black text-blue-600">{stats.completionRate}%</span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-2xl h-4 overflow-hidden">
+                                <div 
+                                    className="bg-blue-600 h-full rounded-2xl transition-all duration-1000 ease-out shadow-lg shadow-blue-200"
+                                    style={{ width: `${stats.completionRate}%` }}
+                                />
+                            </div>
+                        </div>
 
-                        <div className="grid grid-cols-3 gap-4 mt-6">
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-                                <div className="text-xs text-gray-500">Completed</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-                                <div className="text-xs text-gray-500">Pending</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-                                <div className="text-xs text-gray-500">Overdue</div>
-                            </div>
+                        <div className="grid grid-cols-3 gap-6 pt-4">
+                            <MiniStat label="Success" value={stats.completed} sub="Tasks done" color="text-emerald-600" />
+                            <MiniStat label="Active" value={stats.pending} sub="To do" color="text-amber-600" />
+                            <MiniStat label="Critical" value={stats.overdue} sub="Delayed" color="text-rose-600" />
                         </div>
                     </div>
                 </div>
 
-                <div className="card">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Quick Stats</h3>
-                        <Calendar className="h-5 w-5 text-primary-500" />
+                {/* Upcoming Tasks Section */}
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-gray-900">Next 7 Days</h3>
+                        <Calendar className="h-5 w-5 text-gray-400" />
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-gray-600">Today's Tasks</span>
-                            <span className="font-medium">
-                                {tasks.filter(task => {
-                                    if (!task.dueDate) return false;
-                                    const today = new Date().toDateString();
-                                    const taskDate = new Date(task.dueDate).toDateString();
-                                    return today === taskDate;
-                                }).length}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-gray-600">This Week</span>
-                            <span className="font-medium">
-                                {tasks.filter(task => {
-                                    if (!task.dueDate) return false;
-                                    const now = new Date();
-                                    const weekStart = new Date(now.setDate(now.getDate() - now.getDate()));
-                                    const weekEnd = new Date(now.setDate(now.getDate() - now.getDate() + 6));
-                                    const taskDate = new Date(task.dueDate);
-                                    return taskDate >= weekStart && taskDate <= weekEnd;
-                                }).length}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-gray-600">High Priority</span>
-                            <span className="font-medium text-red-600">
-                                {tasks.filter(task => task.priority === 'high' && !task.completed).length}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Upcoming Tasks */}
-            <div className="card">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900">Upcoming Tasks</h3>
-                    <Calendar className="h-5 w-5 text-primary-500" />
-                </div>
-
-                {upcomingTasks.length === 0 ? (
-                    <div className="text-center py-8">
-                        <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">No upcoming tasks in the next 7 days</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {upcomingTasks.map((task => (
-                            <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-gray-900 truncate">{task.title}</p>
-                                    <p className="text-sm text-gray-500">
-                                        Due: {formatDate(task.dueDate)}
-                                    </p>
+                    <div className="space-y-4 flex-1">
+                        {stats.upcoming.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-10">
+                                <Calendar className="h-12 w-12 mb-3" />
+                                <p className="font-medium">All clear for now!</p>
+                            </div>
+                        ) : (
+                            stats.upcoming.map(task => (
+                                <div key={task.id} className="group flex items-center p-4 bg-gray-50 rounded-2xl hover:bg-blue-50 transition-colors cursor-pointer border border-transparent hover:border-blue-100">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-gray-900 truncate text-sm">{task.title}</p>
+                                        <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-tighter">
+                                            {formatDate(task.dueDate)}
+                                        </p>
+                                    </div>
+                                    <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-blue-500 transition-colors" />
                                 </div>
-                                <div className="ml-4">
-                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                        task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-green-100 text-green-800'
-                                    }`}>
-                                        {task.priority}
-                                    </span>
-                                </div>
-                            </div>
-                        )))}
+                            ))
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
 };
+
+// Sous-composants pour la clarté
+const StatCard = ({ icon: Icon, title, value, color }) => {
+    const colors = {
+        blue: "bg-blue-50 text-blue-600",
+        emerald: "bg-emerald-50 text-emerald-600",
+        amber: "bg-amber-50 text-amber-600",
+        rose: "bg-rose-50 text-rose-600"
+    };
+    return (
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-5">
+            <div className={`p-4 rounded-2xl ${colors[color]}`}>
+                <Icon className="h-7 w-7" />
+            </div>
+            <div>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{title}</p>
+                <p className="text-3xl font-black text-gray-900">{value}</p>
+            </div>
+        </div>
+    );
+};
+
+const MiniStat = ({ label, value, sub, color }) => (
+    <div className="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
+        <div className={`text-2xl font-black ${color}`}>{value}</div>
+        <div className="text-[10px] font-black uppercase text-gray-400 tracking-tighter">{label}</div>
+        <div className="text-[10px] text-gray-400 italic">{sub}</div>
+    </div>
+);
 
 export default Dashboard;
