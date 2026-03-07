@@ -27,7 +27,6 @@ const TaskItem = ({ task, onToggleComplete, onDeleteTask, onEditTask }) => {
         setEditData(prev => ({ ...prev, [name]: value }));
     };
 
-    // --- MODE ÉDITION ---
     if (isEditing) {
         return (
             <div className="bg-blue-50/50 border-2 border-blue-200 rounded-2xl p-4 mb-3 animate-in fade-in duration-200">
@@ -62,7 +61,7 @@ const TaskItem = ({ task, onToggleComplete, onDeleteTask, onEditTask }) => {
                                 <X className="h-4 w-4" />
                             </button>
                             <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm shadow-blue-200 flex items-center gap-1">
-                                <Save className="h-4 w-4" /> Save
+                                <Save className="h-4 w-4" /> Enregistrer
                             </button>
                         </div>
                     </div>
@@ -71,14 +70,12 @@ const TaskItem = ({ task, onToggleComplete, onDeleteTask, onEditTask }) => {
         );
     }
 
-    // --- MODE AFFICHAGE ---
     return (
         <div className={`group relative bg-white border border-gray-100 rounded-2xl p-4 mb-3 transition-all duration-300 hover:shadow-xl hover:border-blue-100
             ${task.completed ? 'bg-gray-50/50 border-transparent' : ''}
             ${isOverdue ? 'border-l-4 border-l-rose-500' : 'border-l-4 border-l-transparent'}`}>
             
             <div className="flex items-start gap-4">
-                {/* Checkbox Custom */}
                 <button
                     onClick={() => onToggleComplete(task.id)}
                     className={`mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
@@ -104,13 +101,11 @@ const TaskItem = ({ task, onToggleComplete, onDeleteTask, onEditTask }) => {
                             )}
                         </div>
                         
-                        {/* Priority Badge */}
                         <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${priority.color}`}>
                             {priority.label}
                         </span>
                     </div>
 
-                    {/* Meta info & Actions */}
                     <div className="mt-4 flex items-center justify-between">
                         <div className="flex flex-wrap gap-4 text-[11px] font-medium uppercase tracking-tight">
                             {task.dueDate && (
@@ -127,7 +122,6 @@ const TaskItem = ({ task, onToggleComplete, onDeleteTask, onEditTask }) => {
                             )}
                         </div>
 
-                        {/* Actions : Invisibles par défaut, apparaissent au hover */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                                 onClick={() => setIsEditing(true)}

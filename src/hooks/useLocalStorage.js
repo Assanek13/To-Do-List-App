@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export const useLocalStorage = (key, initialValue) => {
-    // 1. Initialisation sécurisée
     const [storedValue, setStoredValue] = useState(() => {
         if (typeof window === "undefined") return initialValue;
 
@@ -14,11 +13,9 @@ export const useLocalStorage = (key, initialValue) => {
         }
     });
 
-    // 2. Utilisation de useCallback pour stabiliser la référence de setValue
     const setValue = useCallback((value) => {
         try {
             setStoredValue((prevValue) => {
-                // Gère les mises à jour fonctionnelles (ex: setValue(prev => [...prev, newTask]))
                 const valueToStore = value instanceof Function ? value(prevValue) : value;
                 
                 if (typeof window !== "undefined") {
@@ -32,7 +29,6 @@ export const useLocalStorage = (key, initialValue) => {
         }
     }, [key]);
 
-    // 3. Synchronisation entre les onglets/fenêtres
     useEffect(() => {
         const handleStorageChange = (e) => {
             if (e.key === key && e.newValue !== null) {

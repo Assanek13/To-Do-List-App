@@ -2,11 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, X, Calendar, Flag, Bell } from 'lucide-react';
 import { generateId } from '../utils/tasksUtils';
 
-// 1. Extraction de l'état initial pour plus de clarté
 const INITIAL_STATE = {
     title: "",
     description: "",
-    priority: "medium",
+    priority: "Moyen",
     dueDate: "",
     reminderTime: "",
 };
@@ -14,7 +13,6 @@ const INITIAL_STATE = {
 const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
     const [formData, setFormData] = useState(INITIAL_STATE);
 
-    // 2. Fermeture avec la touche Echap
     useEffect(() => {
         const handleEsc = (e) => { if (e.key === 'Escape') onToggle(); };
         if (isOpen) window.addEventListener('keydown', handleEsc);
@@ -57,7 +55,6 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
 
     return (
         <>
-            {/* Backdrop avec flou pour un effet premium */}
             <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
                 onClick={onToggle}
@@ -66,7 +63,7 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
             <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
                     <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-800">New Task</h2>
+                        <h2 className="text-xl font-bold text-gray-800">Nouvelle tâche</h2>
                         <button onClick={onToggle} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X className="h-5 w-5 text-gray-500" />
                         </button>
@@ -74,7 +71,7 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
 
                     <form onSubmit={handleSubmit} className="p-6 space-y-5">
                         <div className="space-y-1">
-                            <label className="text-sm font-semibold text-gray-700">Title</label>
+                            <label className="text-sm font-semibold text-gray-700">Titre</label>
                             <input
                                 type="text"
                                 name="title"
@@ -82,7 +79,7 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
                                 value={formData.title}
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                placeholder="What needs to be done?"
+                                placeholder="Que faut-il faire ?"
                                 required
                             />
                         </div>
@@ -97,14 +94,14 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
                                 onChange={handleChange}
                                 rows={3}
                                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
-                                placeholder="Add more details..."
+                                placeholder="Ajoutez plus de détails..."
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <Flag className="h-4 w-4" /> Priority
+                                    <Flag className="h-4 w-4" /> Priorité
                                 </label>
                                 <select
                                     name="priority"
@@ -112,17 +109,17 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
                                     onChange={handleChange}
                                     className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
+                                    <option value="low">Faible</option>
+                                    <option value="medium">Moyen</option>
+                                    <option value="high">Élevé</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
                                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <Calendar className="h-4 w-4" /> Due Date
+                                    <Calendar className="h-4 w-4" /> Date d'échéance
                                 </label>
                                 <input
-                                    type="date" // Changé en 'date' pour plus de simplicité, ou garder datetime-local
+                                    type="date"
                                     name="dueDate"
                                     value={formData.dueDate}
                                     onChange={handleChange}
@@ -131,20 +128,19 @@ const AddTaskform = ({ onAddTask, isOpen, onToggle }) => {
                             </div>
                         </div>
 
-                        {/* Actions boutons côte à côte */}
                         <div className="flex gap-3 pt-4">
                             <button
                                 type="button"
                                 onClick={onToggle}
                                 className="flex-1 px-4 py-2.5 text-gray-700 font-medium hover:bg-gray-100 rounded-xl transition-colors"
                             >
-                                Cancel
+                                Annuler
                             </button>
                             <button
                                 type="submit"
                                 className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md shadow-blue-200 transition-all"
                             >
-                                Create Task
+                                Créer une tâche
                             </button>
                         </div>
                     </form>
